@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Silk.Data.Modelling;
 using Silk.Web.ObjectMapping;
-using System.Linq;
 
 namespace Silk.Web
 {
@@ -14,11 +13,7 @@ namespace Silk.Web
 		/// <returns></returns>
 		public static IServiceCollection AddObjectMapper(this IServiceCollection services)
 		{
-			if (!services.Any(q => q.ServiceType == typeof(ITypeInstanceFactory)))
-				services.AddScoped<ITypeInstanceFactory, ServiceProviderTypeFactory>();
-
-			if (!services.Any(q => q.ServiceType == typeof(IReaderWriterFactory<TypeModel, PropertyInfoField>)))
-				services.AddScoped<IReaderWriterFactory<TypeModel, PropertyInfoField>, WebReaderWriterFactory>();
+			services.AddDefaultMappingDependencyServices();
 
 			services.AddSingleton(sP => new MappingStore());
 			services.AddScoped<IObjectMapper, WebObjectMapper>();
