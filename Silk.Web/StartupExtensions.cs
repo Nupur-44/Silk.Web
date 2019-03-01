@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Silk.Data.Modelling;
 using Silk.Web.ObjectMapping;
+using Silk.Web.ORM;
 using System.Linq;
 
 namespace Silk.Web
@@ -28,7 +29,10 @@ namespace Silk.Web
 		{
 			services.AddObjectMapper();
 			services.AddORM();
-			services.AddMvc();
+			services.AddMvc(options =>
+			{
+				options.ModelBinderProviders.Insert(0, new ORMEntityModelBindingProvider());
+			});
 
 			return services;
 		}
