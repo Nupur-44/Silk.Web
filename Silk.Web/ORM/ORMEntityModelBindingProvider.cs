@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Silk.Data;
 using Silk.Data.Modelling;
 using Silk.Data.Modelling.Analysis;
 using Silk.Data.Modelling.Analysis.CandidateSources;
@@ -47,7 +48,7 @@ namespace Silk.Web.ORM
 			{
 				entityConfig.Dispatch(builder);
 				if (builder.Binder != null)
-					_typeBinders.Add(entityConfig.EntityType, builder.Binder);
+					_typeBinders.Add(builder.EntityReferenceType, builder.Binder);
 			}
 		}
 
@@ -56,6 +57,7 @@ namespace Silk.Web.ORM
 			private readonly Schema _schema;
 
 			public IModelBinder Binder { get; private set; }
+			public Type EntityReferenceType { get; private set; }
 
 			public BinderBuilder(Schema schema)
 			{
@@ -65,6 +67,7 @@ namespace Silk.Web.ORM
 			public void Execute<T>() where T : class
 			{
 				Binder = null;
+				EntityReferenceType = typeof(IEntityReference<T>);
 
 				var entityModel = _schema.GetEntityModel<T>();
 				var primaryKeyFields = entityModel.Fields.Where(q => q.IsPrimaryKey).ToArray();
