@@ -1,8 +1,13 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Silk.Data.Modelling;
 using Silk.Web.ObjectMapping;
 using Silk.Web.ORM;
+using System;
 using System.Linq;
 
 namespace Silk.Web
@@ -27,6 +32,9 @@ namespace Silk.Web
 		/// <returns></returns>
 		public static IServiceCollection AddSilk(this IServiceCollection services)
 		{
+			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+			services.AddScoped(UrlHelperFactory);
 			services.AddObjectMapper();
 			services.AddORM();
 			services.AddMvc(options =>
@@ -46,6 +54,13 @@ namespace Silk.Web
 		{
 			applicationBuilder.UseMvcWithDefaultRoute();
 			return applicationBuilder;
+		}
+
+		private static IUrlHelper UrlHelperFactory(IServiceProvider serviceProvider)
+		{
+			var factory = serviceProvider.GetRequiredService<IUrlHelperFactory>();
+			var context = serviceProvider.GetRequiredService<IActionContextAccessor>().ActionContext;
+			return factory.GetUrlHelper(context);
 		}
 	}
 }
