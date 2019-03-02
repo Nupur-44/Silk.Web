@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.0.0-dev1</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,7 +12,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
     <PackageReference Include="Silk.Data.Modelling" Version="0.4.0.2" />
-    <PackageReference Include="Silk.Data.SQL.ORM" Version="0.4.0.2" />
+    <PackageReference Include="Silk.Data.SQL.ORM" Version="0.4.1" />
     <PackageReference Include="Silk.Data.SQL.ProvidersBundle" Version="0.1.2.2" />
   </ItemGroup>
 
