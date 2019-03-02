@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Silk.Data.Modelling;
 using Silk.Data.SQL.ORM;
@@ -47,6 +48,18 @@ namespace Silk.Web
 			services.AddScoped<IEntityTable<T>>(BuildEntityTable<T>);
 			services.AddScoped<ISqlEntityStore<T>>(BuildEntityStore<T>);
 			return services;
+		}
+
+		public static IApplicationBuilder CreateORMSchema(this IApplicationBuilder application)
+		{
+			using (var scope = application.ApplicationServices.CreateScope())
+			{
+				var creator = ActivatorUtilities.CreateInstance<ORMSchemaCreator>(
+					scope.ServiceProvider
+					);
+				creator.CreateSchema();
+			}
+			return application;
 		}
 
 		private static IEntityTable<T> BuildEntityTable<T>(IServiceProvider serviceProvider)
