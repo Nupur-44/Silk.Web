@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Silk.Data.Modelling;
 using Silk.Data.SQL.ORM;
@@ -10,7 +9,7 @@ using Silk.Web.ORM;
 using System;
 using System.Linq;
 
-namespace Silk.Web
+namespace Microsoft.Extensions.DependencyInjection
 {
 	public static class ORMStartupExtensions
 	{
@@ -24,7 +23,7 @@ namespace Silk.Web
 			services.AddDefaultMappingDependencyServices();
 
 			if (!services.Any(q => q.ServiceType == typeof(IDataProvider)))
-				services.AddSingleton<IDataProvider>(new SQLite3DataProvider(new Uri("database.db", UriKind.Relative)));
+				services.AddSingleton<IDataProvider>(new SQLite3DataProvider(new Uri("database.db", UriKind.Relative), nonBinaryGUIDs: true));
 
 			//  default schema
 			services.AddSingleton(BuildDefaultSchema);
