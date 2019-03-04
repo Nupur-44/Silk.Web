@@ -1,8 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Silk.Data.Modelling;
+﻿using Silk.Data.Modelling;
 using Silk.Web.ObjectMapping;
 
-namespace Silk.Web
+namespace Microsoft.Extensions.DependencyInjection
 {
 	public static class ObjectModellingStartupExtensions
 	{

@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.Extensions.DependencyInjection;
 using Silk.Data.Modelling;
+using Silk.Web;
 using Silk.Web.ObjectMapping;
 using Silk.Web.ORM;
 using System;
 using System.Linq;
 
-namespace Silk.Web
+namespace Microsoft.Extensions.DependencyInjection
 {
 	public static class StartupExtensions
 	{
@@ -40,7 +40,7 @@ namespace Silk.Web
 			services.AddMvc(options =>
 			{
 				options.ModelBinderProviders.Insert(0, new ORMEntityModelBindingProvider());
-			});
+			}).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
 			return services;
 		}
