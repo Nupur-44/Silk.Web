@@ -52,6 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// <returns></returns>
 		public static IApplicationBuilder UseSilk(this IApplicationBuilder applicationBuilder)
 		{
+			applicationBuilder.UseStaticFiles();
 			applicationBuilder.UseMvcWithDefaultRoute();
 			return applicationBuilder;
 		}
