@@ -5,6 +5,8 @@ using Silk.Data.Modelling.Analysis.CandidateSources;
 using Silk.Data.Modelling.Analysis.Rules;
 using Silk.Web.ObjectMapping;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -44,12 +46,16 @@ namespace Microsoft.Extensions.DependencyInjection
 
 		private static MappingStore MappingStoreFactory(IServiceProvider serviceProvider)
 		{
+			var typeConverters = serviceProvider.GetService<IEnumerable<ITypeConverter>>()?.ToArray();
 			var mappingOptions = serviceProvider.GetRequiredService<IOptions<MappingOptions>>().Value;
-			return new MappingStore(
-				new DefaultIntersectionAnalyzer<TypeModel, PropertyInfoField, TypeModel, PropertyInfoField>(
-					mappingOptions.IntersectCandidateSources, mappingOptions.IntersectionRules
-					)
+
+			var analyzer = new DefaultIntersectionAnalyzer<TypeModel, PropertyInfoField, TypeModel, PropertyInfoField>(
+				mappingOptions.IntersectCandidateSources, mappingOptions.IntersectionRules
 				);
+			if (typeConverters != null && typeConverters.Length > 0)
+				analyzer.AddTypeConverters(typeConverters);
+
+			return new MappingStore(analyzer);
 		}
 	}
 }

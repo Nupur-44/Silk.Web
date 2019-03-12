@@ -25,6 +25,19 @@ namespace Microsoft.Extensions.DependencyInjection
 			return services;
 		}
 
+		public static IServiceCollection AddTypeConverter<TFrom, TTo>(this IServiceCollection services, ITypeConverter<TFrom, TTo> typeConverter)
+		{
+			services.AddSingleton<ITypeConverter>(typeConverter);
+			return services;
+		}
+
+		public static IServiceCollection AddTypeConverter<TConverter>(this IServiceCollection services)
+			where TConverter : class, ITypeConverter
+		{
+			services.AddSingleton<ITypeConverter, TConverter>();
+			return services;
+		}
+
 		/// <summary>
 		/// Adds Silk services.
 		/// </summary>
