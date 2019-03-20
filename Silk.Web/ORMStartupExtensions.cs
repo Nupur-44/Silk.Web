@@ -7,6 +7,7 @@ using Silk.Data.SQL.Providers;
 using Silk.Data.SQL.SQLite3;
 using Silk.Web.ORM;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -83,8 +84,15 @@ namespace Microsoft.Extensions.DependencyInjection
 
 		private static DefaultSchema BuildDefaultSchema(IServiceProvider serviceProvider)
 		{
+			var typeConverters = serviceProvider.GetService<IEnumerable<ITypeConverter>>()?.ToArray();
 			var ormOptions = serviceProvider.GetRequiredService<IOptions<ORMOptions>>().Value;
 			var builder = new DefaultSchemaBuilder();
+
+			if (typeConverters != null && typeConverters.Length > 0)
+				builder.AddTypeConverters(typeConverters);
+
+			foreach (var kvp in ormOptions.MethodCallConverters)
+				builder.AddMethodConverter(kvp.Key, kvp.Value);
 
 			foreach (var entityConfig in ormOptions.ORMEntityConfigurations)
 			{
