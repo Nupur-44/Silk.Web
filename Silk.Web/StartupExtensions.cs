@@ -43,7 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// </summary>
 		/// <param name="services"></param>
 		/// <returns></returns>
-		public static IServiceCollection AddSilk(this IServiceCollection services)
+		public static IServiceCollection AddSilk(this IServiceCollection services, Action<MvcOptions> configureMvc = null)
 		{
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 			services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -53,6 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
 			services.AddMvc(options =>
 			{
 				options.ModelBinderProviders.Insert(0, new ORMEntityModelBindingProvider());
+				configureMvc?.Invoke(options);
 			}).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
 			return services;
