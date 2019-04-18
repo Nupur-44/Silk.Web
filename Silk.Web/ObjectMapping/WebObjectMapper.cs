@@ -22,12 +22,10 @@ namespace Silk.Web.ObjectMapping
 		}
 
 		private IMapping<TypeModel, PropertyInfoField, TypeModel, PropertyInfoField> GetMapping<TFrom, TTo>()
-			where TFrom : class
 			where TTo : class
 			=> _mappingStore.GetMapping<TFrom, TTo>();
 
 		public void Inject<TFrom, TTo>(TFrom from, TTo to)
-			where TFrom : class
 			where TTo : class
 		{
 			var reader = _readerWriterFactory.CreateGraphReader<TFrom>(from);
@@ -37,7 +35,6 @@ namespace Silk.Web.ObjectMapping
 		}
 
 		public void InjectAll<TFrom, TTo>(IEnumerable<TFrom> from, IEnumerable<TTo> to)
-			where TFrom : class
 			where TTo : class
 		{
 			var mapping = GetMapping<TFrom, TTo>();
@@ -55,7 +52,6 @@ namespace Silk.Web.ObjectMapping
 		}
 
 		public TTo Map<TFrom, TTo>(TFrom from)
-			where TFrom : class
 			where TTo : class
 		{
 			var graph = _typeInstanceFactory.CreateInstance<TTo>();
@@ -64,7 +60,6 @@ namespace Silk.Web.ObjectMapping
 		}
 
 		public IEnumerable<TTo> MapAll<TFrom, TTo>(IEnumerable<TFrom> from)
-			where TFrom : class
 			where TTo : class
 		{
 			foreach (var obj in from)

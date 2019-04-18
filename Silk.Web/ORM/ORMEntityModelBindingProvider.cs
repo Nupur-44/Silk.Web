@@ -3,9 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Silk.Data;
 using Silk.Data.Modelling;
-using Silk.Data.Modelling.Analysis;
-using Silk.Data.Modelling.Analysis.CandidateSources;
-using Silk.Data.Modelling.GenericDispatch;
+using Silk.Data.SQL.ORM;
 using Silk.Data.SQL.ORM.Schema;
 using System;
 using System.Collections.Generic;
@@ -73,111 +71,24 @@ namespace Silk.Web.ORM
 				var primaryKeyFields = entityModel.Fields.Where(q => q.IsPrimaryKey).ToArray();
 
 				if (primaryKeyFields.Length == 1)
-					BuildPrimaryKeyReferenceBinder(entityModel, primaryKeyFields[0]);
-			}
-
-			private void BuildPrimaryKeyReferenceBinder<T>(EntityModel<T> entityModel, EntityField<T> primaryKeyField)
-				where T : class
-			{
-				var builder = new PrimaryKeyBuilder<T>(entityModel);
-				primaryKeyField.Dispatch(builder);
-				Binder = builder.Binder;
+				{
+					Binder = new PrimaryKeyEntityBinder<T>(
+						_schema.CreatePrimaryKeyReferenceFactory<T>()
+						);
+				}
 			}
 		}
 
-		private class PrimaryKeyBuilder<TEntity> : IFieldGenericExecutor
+		private class PrimaryKeyEntityBinder<TEntity> : IModelBinder
 			where TEntity : class
 		{
-			private readonly EntityModel<TEntity> _entityModel;
-
-			public IModelBinder Binder { get; private set; }
-
-			public PrimaryKeyBuilder(EntityModel<TEntity> entityModel)
-			{
-				_entityModel = entityModel;
-			}
-
-			void IFieldGenericExecutor.Execute<TField, TData>(IField field)
-			{
-				var modelTranscriber = _entityModel.GetModelTranscriber<TEntity>();
-				var helper = modelTranscriber.SchemaToTypeHelpers.FirstOrDefault(
-					q => q.From == field
-					) as TypeModelHelper<TEntity, TData, TData>;
-				if (helper == null)
-					return;
-
-				var intersectionAnalyzer = new DefaultIntersectionAnalyzer<MockModel, MockField, TypeModel, PropertyInfoField>();
-				var intersection = intersectionAnalyzer.CreateIntersection(new MockModel(field.FieldName), _entityModel.TypeModel);
-				var intersectedFields = intersection.IntersectedFields
-					.OfType<IntersectedFields<MockModel, MockField, TypeModel, PropertyInfoField, string, TData>>()
-					.FirstOrDefault();
-				if (intersectedFields == null)
-					return;
-
-				Binder = new PrimaryKeyEntityBinder<TEntity, TData>(helper, intersectedFields.GetConvertDelegate());
-			}
-		}
-
-		private class MockModel : IModel<MockField>
-		{
-			private MockField[] _fields;
-
-			public IReadOnlyList<MockField> Fields => _fields;
-
-			IReadOnlyList<IField> IModel.Fields => _fields;
-
-			public MockModel(string fieldName)
-			{
-				_fields = new[] { new MockField(fieldName) };
-			}
-
-			public void Dispatch(IModelGenericExecutor executor)
-				=> executor.Execute<MockModel, MockField>(this);
-
-			public IEnumerable<MockField> GetPathFields(IFieldPath<MockField> fieldPath)
-			{
-				if (fieldPath.FinalField == null)
-					return _fields;
-				return new MockField[0];
-			}
-		}
-
-		private class MockField : IField
-		{
-			public string FieldName { get; }
-
-			public bool CanRead => true;
-
-			public bool CanWrite => true;
-
-			public bool IsEnumerableType => false;
-
-			public Type FieldDataType => typeof(string);
-
-			public Type FieldElementType => null;
-
-			public MockField(string fieldName)
-			{
-				FieldName = fieldName;
-			}
-
-			public void Dispatch(IFieldGenericExecutor executor)
-				=> executor.Execute<MockField, string>(this);
-		}
-
-		private class PrimaryKeyEntityBinder<TEntity, TId> : IModelBinder
-			where TEntity : class
-		{
-			private readonly TypeModelHelper<TEntity, TId, TId> _typeModelHelper;
-			private readonly TryConvertDelegate<string, TId> _tryConvertId;
+			private readonly PrimaryKeyEntityReferenceFactory<TEntity> _entityReferenceFactory;
 
 			public PrimaryKeyEntityBinder(
-				TypeModelHelper<TEntity, TId, TId> typeModelHelper,
-				TryConvertDelegate<string, TId> tryConvertId
+				PrimaryKeyEntityReferenceFactory<TEntity> entityReferenceFactory
 				)
 			{
-				_typeModelHelper = typeModelHelper;
-				_tryConvertId = tryConvertId;
+				_entityReferenceFactory = entityReferenceFactory;
 			}
 
 			public Task BindModelAsync(ModelBindingContext bindingContext)
@@ -209,7 +120,12 @@ namespace Silk.Web.ORM
 					return Task.CompletedTask;
 				}
 
-				if (!_tryConvertId(value, out var id))
+				var entityReference = _entityReferenceFactory.Create(
+					bindingContext.HttpContext.RequestServices.GetRequiredService<ITypeInstanceFactory>(),
+					value
+					);
+
+				if (entityReference == null)
 				{
 					// Non-integer arguments result in model state errors
 					bindingContext.ModelState.TryAddModelError(
@@ -217,12 +133,6 @@ namespace Silk.Web.ORM
 											$"Couldn't convert '{value}' entity reference.");
 					return Task.CompletedTask;
 				}
-
-				var entityReference = PrimaryKeyEntityReference<TEntity>.Create<TId>(
-					_typeModelHelper,
-					bindingContext.HttpContext.RequestServices.GetRequiredService<ITypeInstanceFactory>(),
-					id
-					);
 
 				bindingContext.Result = ModelBindingResult.Success(entityReference);
 				return Task.CompletedTask;

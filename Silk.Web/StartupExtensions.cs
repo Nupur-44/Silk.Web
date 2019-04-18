@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.Options;
 using Silk.Data.Modelling;
 using Silk.Web;
 using Silk.Web.ObjectMapping;
@@ -21,6 +22,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
 			if (!services.Any(q => q.ServiceType == typeof(IReaderWriterFactory<TypeModel, PropertyInfoField>)))
 				services.AddScoped<IReaderWriterFactory<TypeModel, PropertyInfoField>, WebReaderWriterFactory>();
+
+			if (!services.Any(q => q.ServiceType == typeof(IOptions<MappingOptions>)))
+				services.Configure<MappingOptions>(options => { });
 
 			return services;
 		}

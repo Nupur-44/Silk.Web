@@ -29,10 +29,10 @@ namespace Silk.Web.Tests
 
 				Assert.AreNotEqual(0, obj.Id);
 
-				store.Select(query => query.AndWhere(q => q.Id == obj.Id), out var fetchResult).Execute();
+				var fetchResult = store.Select().AndWhere(q => q.Id == obj.Id).Execute();
 
-				Assert.AreEqual(1, fetchResult.Result.Count);
-				Assert.AreEqual(obj.Data, fetchResult.Result[0].Data);
+				Assert.AreEqual(1, fetchResult.Count);
+				Assert.AreEqual(obj.Data, fetchResult[0].Data);
 			}
 		}
 
@@ -55,11 +55,11 @@ namespace Silk.Web.Tests
 				var obj = new TestEntity { Data = "Hello World" };
 				store.Insert(obj).Execute();
 
-				store.Select<TestView>(query => query.AndWhere(q => q.Id == obj.Id), out var fetchResult).Execute();
+				var fetchResult = store.Select<TestView>().AndWhere(q => q.Id == obj.Id).Execute();
 
-				Assert.AreEqual(1, fetchResult.Result.Count);
-				Assert.AreEqual(obj.Data, fetchResult.Result[0].Data);
-				Assert.IsNotNull(fetchResult.Result[0].Service);
+				Assert.AreEqual(1, fetchResult.Count);
+				Assert.AreEqual(obj.Data, fetchResult[0].Data);
+				Assert.IsNotNull(fetchResult[0].Service);
 			}
 		}
 

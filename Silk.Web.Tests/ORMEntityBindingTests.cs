@@ -36,7 +36,7 @@ namespace Silk.Web.Tests
 				var bindingContext = new MockModelBindingContext(primaryKey.ToString(), scope.ServiceProvider);
 				binder.BindModelAsync(bindingContext);
 
-				var result = bindingContext.Result.Model as PrimaryKeyEntityReference<Entity>;
+				var result = bindingContext.Result.Model as Data.SQL.ORM.PrimaryKeyEntityReference<Entity>;
 				Assert.IsNotNull(result);
 				Assert.AreEqual(primaryKey, result.AsEntity().Id);
 			}

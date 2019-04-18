@@ -22,7 +22,6 @@ namespace Silk.Web.ObjectMapping
 		}
 
 		public IMapping<TypeModel, PropertyInfoField, TypeModel, PropertyInfoField> GetMapping<TFrom, TTo>()
-			where TFrom : class
 			where TTo : class
 		{
 			var fromType = typeof(TFrom);

@@ -5,7 +5,9 @@ using Silk.Data.SQL.ORM;
 using Silk.Data.SQL.ORM.Schema;
 using Silk.Data.SQL.Providers;
 using Silk.Data.SQL.SQLite3;
+using Silk.Web;
 using Silk.Web.ORM;
+using Silk.Web.TypeConverters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,6 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
 			services.Configure<ORMOptions>(options => options.AddEntity(configureEntity));
 			services.AddScoped<IEntityTable<T>>(BuildEntityTable<T>);
 			services.AddScoped<ISqlEntityStore<T>>(BuildEntityStore<T>);
+			services.AddSingleton<ITypeConverter, EntityReferenceTypeConverter<T>>();
 			return services;
 		}
 
@@ -86,7 +89,7 @@ namespace Microsoft.Extensions.DependencyInjection
 		{
 			var typeConverters = serviceProvider.GetService<IEnumerable<ITypeConverter>>()?.ToArray();
 			var ormOptions = serviceProvider.GetRequiredService<IOptions<ORMOptions>>().Value;
-			var builder = new DefaultSchemaBuilder();
+			var builder = new DefaultSchemaBuilder(DefaultTypeInstanceFactory.Instance);
 
 			if (typeConverters != null && typeConverters.Length > 0)
 				builder.AddTypeConverters(typeConverters);
