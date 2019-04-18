@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Silk.Data;
 using Silk.Data.SQL.Providers;
 using Silk.Data.SQL.SQLite3;
 using Silk.Web.ORM;
@@ -30,7 +31,7 @@ namespace Silk.Web.Tests
 			{
 				var primaryKey = Guid.NewGuid();
 				var providerContext = new MockModelBindingProviderContext(
-					scope.ServiceProvider, typeof(Entity)
+					scope.ServiceProvider, typeof(IEntityReference<Entity>)
 					);
 				var binder = bindingProvider.GetBinder(providerContext);
 				var bindingContext = new MockModelBindingContext(primaryKey.ToString(), scope.ServiceProvider);
