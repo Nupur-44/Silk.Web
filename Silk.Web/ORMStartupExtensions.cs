@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Silk.Data.Modelling;
+using Silk.Data.SQL.MSSQL;
+using Silk.Data.SQL.MySQL;
 using Silk.Data.SQL.ORM;
 using Silk.Data.SQL.ORM.Schema;
+using Silk.Data.SQL.Postgresql;
 using Silk.Data.SQL.Providers;
 using Silk.Data.SQL.SQLite3;
 using Silk.Web;
@@ -32,6 +36,48 @@ namespace Microsoft.Extensions.DependencyInjection
 			services.AddSingleton(BuildDefaultSchema);
 			services.AddSingleton<Schema>(sP => sP.GetRequiredService<DefaultSchema>());
 
+			return services;
+		}
+
+		public static IServiceCollection ConfigureDataProvider(this IServiceCollection services, IConfigurationSection config)
+		{
+			switch (config["provider"].ToLowerInvariant())
+			{
+				case "sqlite3":
+				case "sqlite":
+					return services.ConfigureDataProvider(new SQLite3DataProvider(
+						new Uri(config["file"], UriKind.Relative),
+						nonBinaryGUIDs: true
+						));
+				case "pgsql":
+				case "postgres":
+				case "postgresql":
+					return services.ConfigureDataProvider(new PostgresqlDataProvider(
+						config["host"], config["database"], config["user"], config["pass"]
+						));
+				case "mysql":
+				case "mariadb":
+					return services.ConfigureDataProvider(new MySQLDataProvider(
+						config["host"], config["database"], config["user"], config["pass"]
+						));
+				case "mssql":
+				case "sqlserver":
+					return services.ConfigureDataProvider(new MSSqlDataProvider(
+						config["host"], config["database"], config["user"], config["pass"]
+						));
+			}
+			throw new Exception("Unrecognized data configuration.");
+		}
+
+		public static IServiceCollection ConfigureDataProvider(this IServiceCollection services, IDataProvider dataProvider)
+		{
+			var existingService = services.FirstOrDefault(q => q.ServiceType == typeof(IDataProvider));
+			while (existingService != null)
+			{
+				services.Remove(existingService);
+				existingService = services.FirstOrDefault(q => q.ServiceType == typeof(IDataProvider));
+			}
+			services.AddSingleton<IDataProvider>(dataProvider);
 			return services;
 		}
 
